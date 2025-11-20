@@ -19,19 +19,19 @@ export default function DashboardPage() {
                 <p className="text-gray-500 mt-2">Here's what's happening in your kitchen today.</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-auto md:h-[400px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {/* Main Widget - Kitchen Health */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="md:col-span-1 lg:col-span-1 h-64 md:h-full"
+                    className="md:col-span-1 lg:col-span-1 h-72 md:h-full"
                 >
                     <KitchenHealthWidget />
                 </motion.div>
 
                 {/* Secondary Widgets Column */}
-                <div className="md:col-span-1 lg:col-span-2 grid grid-rows-2 gap-6 h-full">
+                <div className="md:col-span-1 lg:col-span-2 grid grid-rows-2 gap-8 h-full">
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -57,7 +57,7 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="mt-8"
+                className="mt-12"
             >
                 <h2 className="text-2xl font-bold font-clash mb-4">Recent Activity</h2>
                 <div className="glass-panel rounded-2xl p-6">

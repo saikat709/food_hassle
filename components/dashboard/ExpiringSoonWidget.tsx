@@ -30,7 +30,7 @@ export function ExpiringSoonWidget() {
                         <motion.div
                             key={item.id}
                             whileHover={{ y: -5 }}
-                            className="min-w-[100px] p-3 rounded-xl bg-off-white border border-gray-100 flex flex-col items-center gap-2"
+                            className="min-w-[100px] p-3 rounded-xl bg-white shadow-md border border-gray-100 flex flex-col items-center gap-2"
                         >
                             <span className="text-2xl">{item.image}</span>
                             <span className="font-medium text-sm text-charcoal-blue">{item.name}</span>

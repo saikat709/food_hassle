@@ -21,7 +21,7 @@ export function QuickActionsWidget() {
                         <motion.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="flex flex-col items-center gap-2 p-3 rounded-xl bg-off-white hover:bg-white transition-colors cursor-pointer"
+                            className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gradient-to-br from-stone-100 to-stone-200 hover:from-stone-200 hover:to-stone-300 transition-all cursor-pointer"
                         >
                             <div className={`w-12 h-12 rounded-full ${action.color} flex items-center justify-center text-white shadow-lg`}>
                                 <action.icon size={20} />

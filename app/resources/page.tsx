@@ -30,7 +30,7 @@ const resources = [
         id: 4,
         title: "Zero Waste Kitchen Hacks",
         category: "Lifestyle",
-        image: "https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=2600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2670&auto=format&fit=crop",
         height: "h-72",
     },
     {
@@ -39,6 +39,55 @@ const resources = [
         category: "DIY",
         image: "https://images.unsplash.com/photo-1592417817098-8fd3d9eb14a5?q=80&w=2569&auto=format&fit=crop",
         height: "h-64",
+    },
+    {
+        id: 6,
+        title: "Meal Prep Like a Pro",
+        category: "Guide",
+        image: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?q=80&w=2600&auto=format&fit=crop",
+        height: "h-72",
+    },
+    {
+        id: 7,
+        title: "Composting 101",
+        category: "Lifestyle",
+        image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2600&auto=format&fit=crop",
+        height: "h-56",
+    },
+    {
+        id: 8,
+        title: "Best Freezer-Friendly Foods",
+        category: "Storage Tip",
+        image: "https://images.unsplash.com/photo-1584308972272-9e4e7685e80f?q=80&w=2600&auto=format&fit=crop",
+        height: "h-64",
+    },
+    {
+        id: 9,
+        title: "Turn Leftovers into Gourmet",
+        category: "Recipe",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2600&auto=format&fit=crop",
+        height: "h-80",
+    },
+    {
+        id: 10,
+        title: "Seasonal Eating Benefits",
+        category: "Guide",
+        image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2600&auto=format&fit=crop",
+        height: "h-64",
+    },
+    {
+        id: 11,
+        title: "DIY Food Storage Solutions",
+        category: "DIY",
+        image: "https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=2600&auto=format&fit=crop",
+        height: "h-72",
+    },
+    {
+        id: 12,
+        title: "Reduce Plastic in Your Kitchen",
+        category: "Lifestyle",
+        image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2600&auto=format&fit=crop",
+        height: "h-56",
     },
 ];
 
@@ -70,7 +119,7 @@ export default function ResourcesPage() {
                                     alt={resource.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
                                 <div className="absolute top-4 right-4">
                                     <button className="p-2 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white hover:text-sage-green transition-colors">
