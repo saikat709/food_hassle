@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
-import { Camera, Upload, Plus, X, Leaf, Sparkles } from "lucide-react";
+import { Camera, Upload, Plus, X, Leaf, Sparkles, Calendar, ExternalLink } from "lucide-react";
 
 export default function LogFoodPage() {
     const [activeTab, setActiveTab] = useState<"quick" | "detailed">("quick");
@@ -60,8 +60,8 @@ export default function LogFoodPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8"
             >
-                <h1 className="text-3xl font-bold font-clash text-charcoal-blue mb-2">Log Your Harvest</h1>
-                <p className="text-gray-500 text-lg">Track every item to reduce waste and save the planet.</p>
+                <h1 className="text-3xl font-bold font-clash text-charcoal-blue mb-2">Log Consumption</h1>
+                <p className="text-gray-500 text-lg">Track what you've consumed today</p>
             </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -90,100 +90,109 @@ export default function LogFoodPage() {
                     </div>
 
                     <Card className="p-6 md:p-8">
-                        <form className="space-y-8">
-                            {/* Image Upload Section */}
-                            <div className="relative group cursor-pointer">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                />
-                                <div className={`w-full h-56 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center gap-3 ${image ? "border-sage-green bg-sage-green/5" : "border-gray-300 hover:border-sage-green hover:bg-sage-green/5 bg-gray-50"
-                                    }`}>
-                                    {image ? (
-                                        <div className="relative w-full h-full p-2">
-                                            <img src={image} alt="Preview" className="w-full h-full object-cover rounded-xl shadow-sm" />
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setImage(null);
-                                                }}
-                                                className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md z-20 hover:bg-gray-100 transition-colors"
-                                            >
-                                                <X size={18} className="text-terracotta" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                                <Camera className="text-sage-green w-8 h-8" />
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-base font-bold text-charcoal-blue">Scan Receipt or Item</p>
-                                                <p className="text-sm text-gray-400">Supports JPG, PNG</p>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
+                        <form className="space-y-6">
+                            {/* Basic Fields - Always Visible */}
+                            <Input label="Item Name" placeholder="e.g. Bananas" />
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <Input label="Quantity Consumed" placeholder="e.g. 2" type="number" />
+                                <Input label="Unit" placeholder="e.g. pcs" />
                             </div>
 
-                            <div className="space-y-6">
-                                <Input label="Item Name" placeholder="e.g. Bananas" />
+                            <Input
+                                type="date"
+                                label="Date Consumed"
+                                onClick={(e) => e.currentTarget.showPicker()}
+                            />
 
-                                <div className="grid grid-cols-2 gap-6">
-                                    <Input label="Quantity" placeholder="e.g. 6" />
-                                    <Input label="Unit" placeholder="e.g. pcs" />
-                                </div>
+                            {activeTab === "detailed" && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    className="pt-6 space-y-6"
+                                >
+                                    <Select
+                                        label="Category"
+                                        value={category}
+                                        onChange={setCategory}
+                                        options={[
+                                            { value: "dairy", label: "Dairy" },
+                                            { value: "vegetables", label: "Vegetables" },
+                                            { value: "fruits", label: "Fruits" },
+                                            { value: "meat", label: "Meat" },
+                                            { value: "bakery", label: "Bakery" },
+                                            { value: "pantry", label: "Pantry" },
+                                        ]}
+                                    />
 
-                                {activeTab === "detailed" && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        onAnimationComplete={() => setOverflow("visible")}
-                                        className={`pt-6 space-y-8 ${overflow}`}
-                                    >
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <Input
-                                                type="date"
-                                                label="Purchase Date"
-                                                onClick={(e) => e.currentTarget.showPicker()}
-                                            />
-                                            <Input
-                                                type="date"
-                                                label="Expiry Date"
-                                                onClick={(e) => e.currentTarget.showPicker()}
-                                            />
-                                        </div>
+                                    <Input
+                                        type="time"
+                                        label="Time Consumed (Optional)"
+                                        onClick={(e) => e.currentTarget.showPicker()}
+                                    />
 
-                                        <Select
-                                            label="Category"
-                                            value={category}
-                                            onChange={setCategory}
-                                            options={[
-                                                { value: "dairy", label: "Dairy" },
-                                                { value: "vegetables", label: "Vegetables" },
-                                                { value: "fruits", label: "Fruits" },
-                                                { value: "meat", label: "Meat" },
-                                                { value: "bakery", label: "Bakery" },
-                                                { value: "pantry", label: "Pantry" },
-                                            ]}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Notes (Optional)
+                                        </label>
+                                        <textarea
+                                            className="w-full px-4 py-3 rounded-xl bg-off-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sage-green/20 transition-all resize-none"
+                                            rows={3}
+                                            placeholder="Add any notes about this consumption..."
                                         />
+                                    </div>
+                                </motion.div>
+                            )}
 
-                                        <Input label="Price" placeholder="0.00" type="number" />
-                                    </motion.div>
-                                )}
+                            {/* Optional Inventory Integration */}
+                            <div className="pt-4 border-t border-gray-200">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        className="w-5 h-5 rounded border-gray-300 text-sage-green focus:ring-sage-green/20"
+                                    />
+                                    <div>
+                                        <span className="text-sm font-medium text-charcoal-blue group-hover:text-sage-green transition-colors">
+                                            Also remove from inventory
+                                        </span>
+                                        <p className="text-xs text-gray-500">
+                                            Reduce the quantity in your inventory by the consumed amount
+                                        </p>
+                                    </div>
+                                </label>
                             </div>
 
                             <Button className="w-full py-4 text-lg shadow-xl shadow-sage-green/20" size="lg">
-                                <Plus className="w-6 h-6" /> Add to Inventory
+                                <Plus className="w-6 h-6" /> Log Consumption
                             </Button>
                         </form>
+                    </Card>
+
+                    {/* View History Button */}
+                    <Card className="p-4 bg-gradient-to-r from-sage-green/5 to-deep-emerald/5 border-sage-green/20">
+                        <a
+                            href="/history"
+                            className="flex items-center justify-between p-3 rounded-xl hover:bg-white/50 transition-all group cursor-pointer"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-sage-green/10 flex items-center justify-center group-hover:bg-sage-green/20 transition-colors">
+                                    <Calendar className="text-sage-green" size={24} />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-charcoal-blue group-hover:text-sage-green transition-colors">
+                                        View Consumption History
+                                    </p>
+                                    <p className="text-xs text-gray-500">See all your logged consumption</p>
+                                </div>
+                            </div>
+                            <ExternalLink className="text-sage-green opacity-0 group-hover:opacity-100 transition-opacity" size={20} />
+                        </a>
                     </Card>
                 </div>
 
                 {/* Right Column: Visuals & Tips */}
                 <div className="lg:col-span-1 space-y-6">
+                    {/* Did you know card */}
                     <div className="rounded-2xl shadow-xl bg-gradient-to-br from-[#004032] to-[#8A9A5B] border-none text-white p-8 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <Leaf size={120} />
@@ -205,32 +214,42 @@ export default function LogFoodPage() {
                         </div>
                     </div>
 
+                    {/* Recent Consumption */}
                     <Card className="p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-bold font-clash text-lg text-charcoal-blue">Recent Logs</h3>
-                            <button className="text-xs font-bold text-sage-green hover:text-deep-emerald transition-colors">View All</button>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold font-clash text-lg text-charcoal-blue">Recent Consumption</h3>
+                            <a
+                                href="/history"
+                                className="text-xs font-bold text-sage-green hover:text-deep-emerald transition-colors"
+                            >
+                                View All
+                            </a>
                         </div>
                         <div className="space-y-3">
-                            {[1, 2, 3].map((i, index) => (
+                            {[
+                                { item: "Apples", quantity: "2 pcs", time: "2 hours ago", category: "Fruits" },
+                                { item: "Milk", quantity: "250ml", time: "5 hours ago", category: "Dairy" },
+                                { item: "Bread", quantity: "2 slices", time: "Yesterday", category: "Bakery" },
+                            ].map((log, i) => (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    whileHover={{ scale: 1.02, backgroundColor: "rgba(138, 154, 91, 0.1)" }}
-                                    className="flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors group"
+                                    transition={{ delay: i * 0.1 }}
+                                    className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
-                                        {i === 1 ? "🥑" : i === 2 ? "🍞" : "🥚"}
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-sage-green/10 flex items-center justify-center text-lg">
+                                            {log.category === "Fruits" ? "🍎" : log.category === "Dairy" ? "🥛" : "🍞"}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-sm text-charcoal-blue">{log.item}</p>
+                                            <p className="text-xs text-gray-500">{log.quantity} • {log.time}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="font-bold text-sm text-charcoal-blue group-hover:text-sage-green transition-colors">{i === 1 ? "Avocados" : i === 2 ? "Sourdough" : "Eggs"}</p>
-                                        <p className="text-xs text-gray-400">Today, 10:30 AM</p>
-                                    </div>
-                                    <div className="relative">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-sage-green relative z-10" />
-                                        <div className="absolute inset-0 bg-sage-green rounded-full animate-ping opacity-75" />
-                                    </div>
+                                    <span className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600">
+                                        {log.category}
+                                    </span>
                                 </motion.div>
                             ))}
                         </div>
