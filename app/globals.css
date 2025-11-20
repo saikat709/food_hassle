@@ -1,26 +1,97 @@
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-sage-green: #8A9A5B;
+  --color-deep-emerald: #004032;
+  --color-spiced-ochre: #D4A017;
+  --color-terracotta: #E2725B;
+  --color-off-white: #F9F8F4;
+  --color-charcoal-blue: #1E293B;
+
+  --font-clash: 'Clash Display', sans-serif;
+  --font-dm-sans: 'DM Sans', sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--color-off-white);
+  --foreground: var(--color-charcoal-blue);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-clash);
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.glass-panel-dark {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Neumorphism */
+.neumorphic-input {
+  background: #F9F8F4;
+  box-shadow: inset 5px 5px 10px #d9d8d4,
+    inset -5px -5px 10px #ffffff;
+  border: none;
+}
+
+.neumorphic-btn {
+  background: #F9F8F4;
+  box-shadow: 5px 5px 10px #d9d8d4,
+    -5px -5px 10px #ffffff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.neumorphic-btn:active {
+  box-shadow: inset 5px 5px 10px #d9d8d4,
+    inset -5px -5px 10px #ffffff;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sage-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-deep-emerald);
 }
