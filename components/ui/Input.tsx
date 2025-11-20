@@ -13,18 +13,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, type, label, error, ...props }, ref) => {
         const [isFocused, setIsFocused] = React.useState(false);
         const [hasValue, setHasValue] = React.useState(false);
+        const isDateType = type === "date" || type === "time" || type === "datetime-local";
+        const shouldFloat = isFocused || hasValue || !!props.value || isDateType;
 
         return (
             <div className="relative w-full">
                 <div className="relative">
                     <input
                         type={type}
+                        {...props}
                         className={cn(
                             "neumorphic-input w-full px-4 py-3 rounded-xl outline-none text-charcoal-blue bg-transparent transition-all",
                             "focus:ring-2 focus:ring-sage-green/20",
                             className
                         )}
                         ref={ref}
+                        placeholder={isFocused ? props.placeholder : ""}
                         onFocus={(e) => {
                             setIsFocused(true);
                             props.onFocus?.(e);
@@ -38,15 +42,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                             setHasValue(!!e.target.value);
                             props.onChange?.(e);
                         }}
-                        {...props}
                     />
                     {label && (
                         <motion.label
                             initial={false}
                             animate={{
-                                y: isFocused || hasValue ? -28 : 12,
-                                x: isFocused || hasValue ? 0 : 12,
-                                scale: isFocused || hasValue ? 0.85 : 1,
+                                y: shouldFloat ? -28 : 12,
+                                x: shouldFloat ? 0 : 12,
+                                scale: shouldFloat ? 0.85 : 1,
                                 color: isFocused ? "#8A9A5B" : "#64748B",
                             }}
                             className="absolute left-0 pointer-events-none font-medium"
