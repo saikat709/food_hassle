@@ -6,7 +6,7 @@ import { AOSInit } from "@/components/AOSInit";
 import { BackgroundBlobs } from "@/components/ui/BackgroundBlobs";
 
 export const metadata: Metadata = {
-  title: "Urban Harvest",
+  title: "Food Hassle - Reduce Food Waste, Embrace Sustainability",
   description: "Sustainable Food Management Platform",
 };
 

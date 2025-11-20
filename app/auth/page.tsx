@@ -1,25 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
 import { Leaf } from "lucide-react";
 
 export default function AuthPage() {
-    const [isLogin, setIsLogin] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        router.push("/dashboard");
-    };
-
     return (
         <div className="fixed inset-0 flex w-full h-full bg-off-white overflow-hidden">
             {/* Left Side - Visuals */}
@@ -32,7 +17,7 @@ export default function AuthPage() {
                         <div className="w-10 h-10 bg-sage-green rounded-full flex items-center justify-center">
                             <Leaf className="text-white" />
                         </div>
-                        <h1 className="text-2xl font-bold font-clash">Urban Harvest</h1>
+                        <h1 className="text-2xl font-bold font-clash">Food Hassle</h1>
                     </div>
 
                     <div className="max-w-md">
@@ -50,7 +35,7 @@ export default function AuthPage() {
                 </div>
             </div>
 
-            {/* Right Side - Form */}
+            {/* Right Side - Google Auth */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
                 <div className="w-full max-w-md">
                     <motion.div
@@ -60,61 +45,22 @@ export default function AuthPage() {
                         className="mb-8 text-center lg:text-left"
                     >
                         <h2 className="text-3xl font-bold text-charcoal-blue font-clash mb-2">
-                            {isLogin ? "Welcome Back" : "Join the Movement"}
+                            Welcome
                         </h2>
                         <p className="text-gray-500">
-                            {isLogin ? "Enter your details to access your kitchen." : "Start your sustainability journey today."}
+                            Sign in with Google to continue.
                         </p>
                     </motion.div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <AnimatePresence mode="wait">
-                            {!isLogin && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="space-y-4 overflow-hidden"
-                                >
-                                    <Input placeholder="Full Name" required />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <select className="neumorphic-input w-full px-4 py-3 rounded-xl outline-none text-charcoal-blue bg-transparent">
-                                            <option value="">Household Size</option>
-                                            <option value="1">1 Person</option>
-                                            <option value="2">2 People</option>
-                                            <option value="3">3-4 People</option>
-                                            <option value="5+">5+ People</option>
-                                        </select>
-                                        <Input placeholder="Location (City)" />
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <Input type="email" placeholder="Email Address" required />
-                        <Input type="password" placeholder="Password" required />
-
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            size="lg"
-                            isLoading={isLoading}
-                        >
-                            {isLogin ? "Sign In" : "Create Account"}
-                        </Button>
-                    </form>
-
-                    <div className="mt-8 text-center">
-                        <p className="text-gray-500">
-                            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-                            <button
-                                onClick={() => setIsLogin(!isLogin)}
-                                className="text-sage-green font-bold hover:underline"
-                            >
-                                {isLogin ? "Sign Up" : "Log In"}
-                            </button>
-                        </p>
-                    </div>
+                    <button
+                        onClick={() => signIn("google")}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded shadow hover:bg-blue-700 font-bold text-lg"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M21.805 10.023h-9.765v3.955h5.586c-.241 1.236-1.457 3.627-5.586 3.627-3.357 0-6.09-2.782-6.09-6.205s2.733-6.205 6.09-6.205c1.914 0 3.197.816 3.933 1.516l2.687-2.613c-1.729-1.613-3.957-2.613-6.62-2.613-5.514 0-9.99 4.477-9.99 9.915s4.476 9.915 9.99 9.915c5.742 0 9.547-4.027 9.547-9.72 0-.654-.07-1.154-.154-1.615z" fill="#fff"/>
+                        </svg>
+                        Continue with Google
+                    </button>
                 </div>
             </div>
         </div>
