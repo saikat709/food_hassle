@@ -1,0 +1,81 @@
+@baseUrl = http://localhost:3000/api
+@userId = cmi8hu4250000d9oqrusd6n6z
+
+### Test Prisma Connection
+GET {{baseUrl}}/test
+
+### Chat with AI
+POST {{baseUrl}}/chatbot/chat
+Content-Type: application/json
+
+{
+    "message": "I have some leftover chicken and rice. What can I make?",
+    "userId": "{{userId}}"
+}
+
+### Chat with AI (Continue Session)
+# Replace sessionId with one returned from the previous request
+POST {{baseUrl}}/chatbot/chat
+Content-Type: application/json
+
+{
+    "message": "Can you make it spicy?",
+    "userId": "{{userId}}",
+    "sessionId": "cm3t5v8u00000v8u0v8u0v8u1"
+}
+
+### Get Chat History
+GET {{baseUrl}}/chatbot/history?userId={{userId}}&limit=5
+
+### Delete Chat Session
+DELETE {{baseUrl}}/chatbot/history
+Content-Type: application/json
+
+{
+    "sessionId": "cm3t5v8u00000v8u0v8u0v8u1",
+    "userId": "{{userId}}"
+}
+
+### Generate Meal Plan
+POST {{baseUrl}}/meal-plan/optimize
+Content-Type: application/json
+
+{
+    "userId": "{{userId}}",
+    "weekStartDate": "2024-05-20",
+    "totalBudget": 150,
+    "inventoryItems": [
+        {
+            "name": "Chicken Breast",
+            "quantity": 2,
+            "unit": "lbs",
+            "expiryDate": "2024-05-25"
+        },
+        {
+            "name": "Rice",
+            "quantity": 1,
+            "unit": "kg"
+        }
+    ],
+    "nutritionGoals": {
+        "dailyCalories": 2000,
+        "proteinGrams": 150,
+        "carbsGrams": 200,
+        "fatGrams": 65
+    },
+    "preferences": {
+        "cuisineTypes": ["Italian", "Asian"],
+        "mealComplexity": "moderate"
+    }
+}
+
+### Get Meal Plans
+GET {{baseUrl}}/meal-plan/optimize?userId={{userId}}&limit=5
+
+### Get Specific Meal Plan
+# Replace mealPlanId with one returned from the generate request
+GET {{baseUrl}}/meal-plan/optimize?userId={{userId}}&mealPlanId=cm3t5v8u00000v8u0v8u0v8u2
+
+### Generate Shopping List
+# Replace mealPlanId with one returned from the generate request
+GET {{baseUrl}}/meal-plan/shopping-list?userId={{userId}}&mealPlanId=cm3t5v8u00000v8u0v8u0v8u2

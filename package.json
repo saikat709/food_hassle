@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@types/bcryptjs": "^2.4.6",
@@ -16,8 +17,10 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
     "heroicons": "^2.2.0",
+    "langchain": "^1.0.6",
     "lucide-react": "^0.554.0",
     "next": "16.0.3",
     "next-auth": "^4.24.13",
@@ -25,6 +28,7 @@
     "prisma": "^7.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.4.1",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.12"
@@ -33,6 +37,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/aos": "^3.0.7",
     "@types/node": "^20",
+    "@types/pg": "^8.15.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
