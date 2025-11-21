@@ -1,16 +1,12 @@
 @baseUrl = http://localhost:3000/api
 
-### Test
-GET {{baseUrl}}/test
-
-
 ### Register a new user
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
     "fullName": "Test User",
-    "email": "testuser@example.com",
+    "email": "testuser2@example.com",
     "password": "Password123!",
     "confirmPassword": "Password123!",
     "householdSize": 2,
