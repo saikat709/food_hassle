@@ -7,7 +7,7 @@ The UI/UX should utilize **Next.js**, **Tailwind CSS**, **ShadCN**, **Framer Mot
 
 ---
 
-### **1. Color Palette: "Urban Harvest"**
+### **1. Color Palette: "Food Hassle"**
 
 * **Primary Colors:**
 
@@ -182,7 +182,7 @@ button:hover {
 
 ### **6. Final Thoughts and Overall Design Direction:**
 
-The **"Urban Harvest"** theme combines **organic, earthy tones** with **modern digital aesthetics** to create a **visually engaging, smooth experience**. The use of **micro-interactions** and **smooth animations** will give users a sense of **delightful and Energetic progress**as they manage food consumption, helping them **stay engaged** with their sustainability goals. The **user interface** is **minimal** yet **effective**, ensuring users can track their **food logs, waste reduction,** and **sustainability habits** easily without feeling overwhelmed.
+The **"Food Hassle"** theme combines **organic, earthy tones** with **modern digital aesthetics** to create a **visually engaging, smooth experience**. The use of **micro-interactions** and **smooth animations** will give users a sense of **delightful and Energetic progress**as they manage food consumption, helping them **stay engaged** with their sustainability goals. The **user interface** is **minimal** yet **effective**, ensuring users can track their **food logs, waste reduction,** and **sustainability habits** easily without feeling overwhelmed.
 
 
 # the pdf contains full description of the requirments

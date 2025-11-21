@@ -350,7 +350,7 @@ export const GENERATION_CONFIG = {
 ## Performance Considerations
 
 - **Context Window**: Currently stores last 20 messages per session
-- **Model Selection**: Uses `gemini-2.5-flash` for chat (fast), `gemini-2.5-pro` for meal planning (more powerful)
+- **Model Selection**: Uses `gemini-2.5-flash` for chat (fast), `gemini-2.5-flash` for meal planning (more powerful)
 - **Caching**: Consider implementing Redis for session caching in production
 
 ## Future Enhancements

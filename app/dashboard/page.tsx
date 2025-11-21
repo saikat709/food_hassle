@@ -4,8 +4,25 @@ import { KitchenHealthWidget } from "@/components/dashboard/KitchenHealthWidget"
 import { ExpiringSoonWidget } from "@/components/dashboard/ExpiringSoonWidget";
 import { QuickActionsWidget } from "@/components/dashboard/QuickActionsWidget";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 export default function DashboardPage() {
+    const { data: session } = useSession();
+
+    // Get greeting based on time of day
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good Morning";
+        if (hour < 18) return "Good Afternoon";
+        return "Good Evening";
+    };
+
+    // Get first name from full name
+    const getFirstName = (fullName: string | null | undefined) => {
+        if (!fullName) return "there";
+        return fullName.split(" ")[0];
+    };
+
     return (
         <div className="space-y-8">
             <motion.div
@@ -14,7 +31,7 @@ export default function DashboardPage() {
                 transition={{ duration: 0.5 }}
             >
                 <h1 className="text-4xl font-bold font-clash text-charcoal-blue">
-                    Good Morning, <span className="text-sage-green">Alex</span>
+                    {getGreeting()}, <span className="text-sage-green">{getFirstName(session?.user?.name)}</span>
                 </h1>
                 <p className="text-gray-500 mt-2">Here's what's happening in your kitchen today.</p>
             </motion.div>

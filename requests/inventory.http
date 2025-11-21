@@ -1,0 +1,89 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = YOUR_AUTH_TOKEN_HERE
+
+### Get all inventory items
+GET {{baseUrl}}/api/inventory
+Cookie: next-auth.session-token={{token}}
+
+### Get all inventory items with category filter
+GET {{baseUrl}}/api/inventory?category=Dairy
+Cookie: next-auth.session-token={{token}}
+
+### Get all inventory items with search
+GET {{baseUrl}}/api/inventory?search=milk
+Cookie: next-auth.session-token={{token}}
+
+### Get all inventory items sorted by expiry date
+GET {{baseUrl}}/api/inventory?sortBy=expiryDate
+Cookie: next-auth.session-token={{token}}
+
+### Create new inventory item
+POST {{baseUrl}}/api/inventory
+Content-Type: application/json
+Cookie: next-auth.session-token={{token}}
+
+{
+  "name": "Organic Milk",
+  "quantity": 1,
+  "unit": "L",
+  "category": "Dairy",
+  "purchaseDate": "2024-11-20",
+  "expiryDate": "2024-11-27",
+  "costPerUnit": 4.99
+}
+
+### Create inventory item with minimal fields
+POST {{baseUrl}}/api/inventory
+Content-Type: application/json
+Cookie: next-auth.session-token={{token}}
+
+{
+  "name": "Bananas",
+  "quantity": 6,
+  "unit": "pcs",
+  "category": "Fruits"
+}
+
+### Get single inventory item
+GET {{baseUrl}}/api/inventory/ITEM_ID_HERE
+Cookie: next-auth.session-token={{token}}
+
+### Update inventory item
+PUT {{baseUrl}}/api/inventory/ITEM_ID_HERE
+Content-Type: application/json
+Cookie: next-auth.session-token={{token}}
+
+{
+  "quantity": 0.5,
+  "expiryDate": "2024-11-30"
+}
+
+### Update inventory item - mark as consumed
+PUT {{baseUrl}}/api/inventory/ITEM_ID_HERE
+Content-Type: application/json
+Cookie: next-auth.session-token={{token}}
+
+{
+  "quantity": 0
+}
+
+### Delete inventory item
+DELETE {{baseUrl}}/api/inventory/ITEM_ID_HERE
+Cookie: next-auth.session-token={{token}}
+
+### Get inventory statistics
+GET {{baseUrl}}/api/inventory/stats
+Cookie: next-auth.session-token={{token}}
+
+### Test unauthorized access (no token)
+GET {{baseUrl}}/api/inventory
+
+### Test creating item without required fields
+POST {{baseUrl}}/api/inventory
+Content-Type: application/json
+Cookie: next-auth.session-token={{token}}
+
+{
+  "name": "Test Item"
+}

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { Loader2, Calendar, ShoppingCart, ChefHat, RefreshCw } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 
 export default function MealPlanPage() {
     const { data: session, status } = useSession();
