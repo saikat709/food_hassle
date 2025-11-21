@@ -196,6 +196,7 @@ Return a JSON object with this exact structure:
 export async function generateMealPlan(request: MealPlanRequest): Promise<MealPlanResponse> {
     try {
         // Get user profile
+        console.log('Searching for user with ID:', request.userId);
         const user = await prisma.user.findUnique({
             where: { id: request.userId },
             select: {
@@ -203,19 +204,34 @@ export async function generateMealPlan(request: MealPlanRequest): Promise<MealPl
                 dietaryPreferences: true,
                 budgetRange: true,
                 location: true,
+                inventoryItems: true,
             },
         });
 
-        if (!user) {
-            throw new Error('User not found');
-        }
+        // Use provided inventory items or fetch from DB
+        const inventoryToUse = request.inventoryItems && request.inventoryItems.length > 0
+            ? request.inventoryItems
+            : user.inventoryItems.map((item: any) => ({
+                name: item.name,
+                quantity: item.quantity,
+                unit: item.unit,
+                expiryDate: item.expiryDate || undefined,
+                estimatedCost: 0,
+            }));
+
+        // Merge inventory into request for prompt generation
+        const requestWithInventory = {
+            ...request,
+            inventoryItems: inventoryToUse,
+        };
 
         // Build prompt
-        const prompt = buildMealPlanPrompt(request, user);
+        const prompt = buildMealPlanPrompt(requestWithInventory, user);
 
-        // Initialize model
+        // Initialize model with system instruction
         const model = genAI.getGenerativeModel({
             model: MODELS.PLANNING,
+            systemInstruction: "You are an expert meal planning assistant. Your goal is to create optimized, budget-friendly meal plans that reduce food waste.",
             generationConfig: {
                 ...GENERATION_CONFIG,
                 temperature: 0.4, // Lower temperature for more consistent structured output
@@ -227,10 +243,14 @@ export async function generateMealPlan(request: MealPlanRequest): Promise<MealPl
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
 
+        console.log('Raw AI Response:', responseText); // Debug log
+
         // Parse JSON response
         let planData;
         try {
-            planData = JSON.parse(responseText);
+            // Clean markdown formatting if present
+            const cleanJson = responseText.replace(/```json\n?|\n?```/g, '').trim();
+            planData = JSON.parse(cleanJson);
         } catch (parseError) {
             console.error('Failed to parse AI response:', responseText);
             throw new Error('Invalid response format from AI');
@@ -243,7 +263,7 @@ export async function generateMealPlan(request: MealPlanRequest): Promise<MealPl
                 weekStartDate: request.weekStartDate,
                 totalBudget: request.totalBudget,
                 estimatedCost: planData.totalEstimatedCost,
-                nutritionGoals: request.nutritionGoals || {},
+                nutritionGoals: (request.nutritionGoals || {}) as any,
                 items: {
                     create: planData.meals.map((meal: any) => ({
                         dayOfWeek: meal.dayOfWeek,
