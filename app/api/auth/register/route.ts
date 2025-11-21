@@ -6,11 +6,7 @@ import { registerSchema } from '@/lib/validation';
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-
-        // Validate input
         const validatedData = registerSchema.parse(body);
-
-        // Check if user already exists
         const existingUser = await prisma.user.findUnique({
             where: { email: validatedData.email },
         });
@@ -21,11 +17,7 @@ export async function POST(req: NextRequest) {
                 { status: 400 }
             );
         }
-
-        // Hash password
         const hashedPassword = await bcrypt.hash(validatedData.password, 10);
-
-        // Create user
         const user = await prisma.user.create({
             data: {
                 email: validatedData.email,
@@ -37,8 +29,6 @@ export async function POST(req: NextRequest) {
                 location: validatedData.location || null,
             },
         });
-
-        // Return user without password
         const { password: _, ...userWithoutPassword } = user;
 
         return NextResponse.json(

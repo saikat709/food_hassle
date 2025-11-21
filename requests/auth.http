@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:3000/api
+
+### Test
+GET {{baseUrl}}/test
+
+
+### Register a new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "fullName": "Test User",
+    "email": "testuser@example.com",
+    "password": "Password123!",
+    "confirmPassword": "Password123!",
+    "householdSize": 2,
+    "dietaryPreferences": ["Vegetarian", "Gluten-Free"],
+    "budgetRange": "Medium",
+    "location": "San Francisco, CA"
+}
+
+### Get CSRF Token (Required for Login)
+# @name csrf
+GET {{baseUrl}}/auth/csrf
+
+### Login (NextAuth Credentials)
+# Note: NextAuth requires a CSRF token. The variable below captures it from the previous request.
+POST {{baseUrl}}/auth/callback/credentials
+Content-Type: application/x-www-form-urlencoded
+
+# csrfToken={{csrf.response.body.csrfToken}}&email=testuser@example.com&password=Password123!&json=true
