@@ -243,7 +243,7 @@ export async function generateMealPlan(request: MealPlanRequest): Promise<MealPl
                 weekStartDate: request.weekStartDate,
                 totalBudget: request.totalBudget,
                 estimatedCost: planData.totalEstimatedCost,
-                nutritionGoals: request.nutritionGoals || {},
+                nutritionGoals: (request.nutritionGoals || {}) as any,
                 items: {
                     create: planData.meals.map((meal: any) => ({
                         dayOfWeek: meal.dayOfWeek,
