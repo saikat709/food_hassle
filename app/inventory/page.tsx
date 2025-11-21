@@ -1,43 +1,140 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import { Search, Filter, Trash2, Check, Plus, X } from "lucide-react";
+import { Search, Filter, Trash2, Check, Plus, X, AlertCircle, Loader2 } from "lucide-react";
+import { InventoryItemWithStatus, InventoryStats } from "@/types/inventory";
+import { getCategoryEmoji } from "@/lib/inventory";
 
-// Mock Data
-const initialItems = [
-    { id: 1, name: "Organic Milk", category: "Dairy", quantity: "1L", expiry: "2 days", status: "warning" },
-    { id: 2, name: "Spinach", category: "Vegetables", quantity: "200g", expiry: "3 days", status: "warning" },
-    { id: 3, name: "Chicken Breast", category: "Meat", quantity: "500g", expiry: "5 days", status: "good" },
-    { id: 4, name: "Greek Yogurt", category: "Dairy", quantity: "500g", expiry: "1 week", status: "good" },
-    { id: 5, name: "Apples", category: "Fruits", quantity: "6 pcs", expiry: "2 weeks", status: "good" },
-    { id: 6, name: "Sourdough Bread", category: "Bakery", expiry: "Expired", status: "expired" },
-];
-
-const categories = ["All", "Dairy", "Vegetables", "Fruits", "Meat", "Bakery"];
+const categories = ["All", "Dairy", "Vegetables", "Fruits", "Meat", "Bakery", "Pantry", "Beverages", "Snacks"];
 
 export default function InventoryPage() {
-    const [items, setItems] = useState(initialItems);
+    // State
+    const [items, setItems] = useState<InventoryItemWithStatus[]>([]);
+    const [stats, setStats] = useState<InventoryStats | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Filter State
     const [activeCategory, setActiveCategory] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newItemCategory, setNewItemCategory] = useState("");
 
-    const filteredItems = items.filter((item) => {
-        const matchesCategory = activeCategory === "All" || item.category === activeCategory;
-        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
+    // Modal State
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    // Form State
+    const [newItem, setNewItem] = useState({
+        name: "",
+        quantity: "",
+        unit: "",
+        category: "Dairy",
+        purchaseDate: new Date().toISOString().split('T')[0],
+        expiryDate: "",
+        costPerUnit: "",
     });
 
-    const handleSwipe = (id: number, direction: "left" | "right") => {
-        // In a real app, this would trigger an API call
-        setTimeout(() => {
-            setItems((prev) => prev.filter((item) => item.id !== id));
-        }, 200);
+    // Fetch Data
+    const fetchInventory = useCallback(async () => {
+        try {
+            setLoading(true);
+            // Build query string
+            const params = new URLSearchParams();
+            if (activeCategory !== "All") params.append("category", activeCategory);
+            if (searchQuery) params.append("search", searchQuery);
+
+            const [itemsRes, statsRes] = await Promise.all([
+                fetch(`/api/inventory?${params.toString()}`),
+                fetch('/api/inventory/stats')
+            ]);
+
+            if (!itemsRes.ok || !statsRes.ok) throw new Error("Failed to fetch data");
+
+            const itemsData = await itemsRes.json();
+            const statsData = await statsRes.json();
+
+            setItems(itemsData);
+            setStats(statsData);
+            setError(null);
+        } catch (err) {
+            console.error(err);
+            setError("Failed to load inventory. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }, [activeCategory, searchQuery]);
+
+    // Initial load and filter changes
+    useEffect(() => {
+        // Debounce search
+        const timer = setTimeout(() => {
+            fetchInventory();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [fetchInventory]);
+
+    // Handlers
+    const handleAddItem = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const res = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newItem),
+            });
+
+            if (!res.ok) throw new Error("Failed to add item");
+
+            await fetchInventory();
+            setShowAddModal(false);
+            // Reset form
+            setNewItem({
+                name: "",
+                quantity: "",
+                unit: "",
+                category: "Dairy",
+                purchaseDate: new Date().toISOString().split('T')[0],
+                expiryDate: "",
+                costPerUnit: "",
+            });
+        } catch (err) {
+            console.error(err);
+            alert("Failed to add item. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this item?")) return;
+
+        try {
+            const res = await fetch(`/api/inventory/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!res.ok) throw new Error("Failed to delete item");
+
+            // Optimistic update
+            setItems(prev => prev.filter(item => item.id !== id));
+            // Refresh stats in background
+            const statsRes = await fetch('/api/inventory/stats');
+            if (statsRes.ok) setStats(await statsRes.json());
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete item.");
+        }
+    };
+
+    const handleConsume = async (id: string) => {
+        // For now, consuming just deletes the item
+        // In future, this could move it to a consumption log
+        await handleDelete(id);
     };
 
     return (
@@ -57,6 +154,28 @@ export default function InventoryPage() {
                     </button>
                 </div>
 
+                {/* Stats Overview */}
+                {stats && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <Card className="p-4 bg-white/50">
+                            <p className="text-sm text-gray-500">Total Items</p>
+                            <p className="text-2xl font-bold text-charcoal-blue">{stats.totalItems}</p>
+                        </Card>
+                        <Card className="p-4 bg-white/50">
+                            <p className="text-sm text-gray-500">Expiring Soon</p>
+                            <p className="text-2xl font-bold text-spiced-ochre">{stats.expiringSoon}</p>
+                        </Card>
+                        <Card className="p-4 bg-white/50">
+                            <p className="text-sm text-gray-500">Expired</p>
+                            <p className="text-2xl font-bold text-terracotta">{stats.expired}</p>
+                        </Card>
+                        <Card className="p-4 bg-white/50">
+                            <p className="text-sm text-gray-500">Total Value</p>
+                            <p className="text-2xl font-bold text-sage-green">${stats.totalValue.toFixed(2)}</p>
+                        </Card>
+                    </div>
+                )}
+
                 {/* Search and Filter */}
                 <div className="flex gap-4">
                     <div className="flex-1 relative">
@@ -69,9 +188,6 @@ export default function InventoryPage() {
                             className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/50 border border-white/20 focus:outline-none focus:ring-2 focus:ring-sage-green/20 transition-all"
                         />
                     </div>
-                    <button className="p-3 rounded-xl bg-white/50 border border-white/20 text-charcoal-blue hover:bg-white transition-colors">
-                        <Filter className="w-5 h-5" />
-                    </button>
                 </div>
 
                 {/* Category Pills */}
@@ -92,82 +208,90 @@ export default function InventoryPage() {
             </motion.div>
 
             {/* Inventory Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <AnimatePresence mode="popLayout">
-                    {filteredItems.map((item, index) => (
-                        <motion.div
-                            key={item.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                            transition={{ delay: index * 0.05 }}
-                        >
-                            <Card className="p-6 hover:shadow-xl transition-all group cursor-pointer h-full">
-                                <div className="flex flex-col h-full">
-                                    {/* Icon and Status Badge */}
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                                            {item.category === "Dairy" ? "🥛" :
-                                                item.category === "Vegetables" ? "🥬" :
-                                                    item.category === "Fruits" ? "🍎" :
-                                                        item.category === "Meat" ? "🥩" : "📦"}
-                                        </div>
-                                        <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${item.status === "expired" ? "bg-terracotta/10 text-terracotta" :
-                                            item.status === "warning" ? "bg-spiced-ochre/10 text-spiced-ochre" :
-                                                "bg-sage-green/10 text-sage-green"
-                                            }`}>
-                                            {item.expiry}
-                                        </span>
-                                    </div>
-
-                                    {/* Item Details */}
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-bold font-clash text-charcoal-blue mb-2 group-hover:text-sage-green transition-colors">
-                                            {item.name}
-                                        </h3>
-                                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                                            <span className="font-medium">{item.quantity}</span>
-                                            <span>•</span>
-                                            <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium">
-                                                {item.category}
+            {loading ? (
+                <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-sage-green" />
+                </div>
+            ) : error ? (
+                <div className="text-center py-12 text-terracotta flex flex-col items-center gap-2">
+                    <AlertCircle size={32} />
+                    <p>{error}</p>
+                    <Button onClick={() => fetchInventory()} variant="outline">Try Again</Button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence mode="popLayout">
+                        {items.map((item, index) => (
+                            <motion.div
+                                key={item.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                transition={{ delay: index * 0.05 }}
+                            >
+                                <Card className="p-6 hover:shadow-xl transition-all group cursor-pointer h-full">
+                                    <div className="flex flex-col h-full">
+                                        {/* Icon and Status Badge */}
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-200 flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                                                {getCategoryEmoji(item.category)}
+                                            </div>
+                                            <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${item.status === "expired" ? "bg-terracotta/10 text-terracotta" :
+                                                    item.status === "warning" ? "bg-spiced-ochre/10 text-spiced-ochre" :
+                                                        "bg-sage-green/10 text-sage-green"
+                                                }`}>
+                                                {item.expiryLabel}
                                             </span>
                                         </div>
-                                    </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-                                        <button
-                                            onClick={() => handleSwipe(item.id, "right")}
-                                            className="flex-1 py-2 px-3 rounded-lg bg-sage-green/10 text-sage-green hover:bg-sage-green hover:text-white transition-all text-sm font-bold flex items-center justify-center gap-2"
-                                        >
-                                            <Check size={16} /> Consume
-                                        </button>
-                                        <button
-                                            onClick={() => handleSwipe(item.id, "left")}
-                                            className="py-2 px-3 rounded-lg bg-terracotta/10 text-terracotta hover:bg-terracotta hover:text-white transition-all text-sm font-bold"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </Card>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
+                                        {/* Item Details */}
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-bold font-clash text-charcoal-blue mb-2 group-hover:text-sage-green transition-colors">
+                                                {item.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                                                <span className="font-medium">{item.quantity} {item.unit}</span>
+                                                <span>•</span>
+                                                <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium">
+                                                    {item.category}
+                                                </span>
+                                            </div>
+                                        </div>
 
-                {filteredItems.length === 0 && (
-                    <div className="col-span-full text-center py-12 text-gray-400">
-                        <p>No items found in this category.</p>
-                    </div>
-                )}
-            </div>
+                                        {/* Action Buttons */}
+                                        <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+                                            <button
+                                                onClick={() => handleConsume(item.id)}
+                                                className="flex-1 py-2 px-3 rounded-lg bg-sage-green/10 text-sage-green hover:bg-sage-green hover:text-white transition-all text-sm font-bold flex items-center justify-center gap-2"
+                                            >
+                                                <Check size={16} /> Consume
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="py-2 px-3 rounded-lg bg-terracotta/10 text-terracotta hover:bg-terracotta hover:text-white transition-all text-sm font-bold"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+
+                    {items.length === 0 && (
+                        <div className="col-span-full text-center py-12 text-gray-400">
+                            <p>No items found. Add some items to get started!</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Add Item Modal */}
             <AnimatePresence>
                 {showAddModal && (
                     <>
-                        {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -176,7 +300,6 @@ export default function InventoryPage() {
                             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
                         />
 
-                        {/* Modal */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -188,13 +311,7 @@ export default function InventoryPage() {
                         >
                             <Card className="w-full max-w-2xl my-8 scrollbar-hide">
                                 <div className="p-6 md:p-8">
-                                    {/* Header */}
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.1 }}
-                                        className="flex items-center justify-between mb-6"
-                                    >
+                                    <div className="flex items-center justify-between mb-6">
                                         <h2 className="text-2xl font-bold font-clash text-charcoal-blue">Add New Item</h2>
                                         <button
                                             onClick={() => setShowAddModal(false)}
@@ -202,115 +319,79 @@ export default function InventoryPage() {
                                         >
                                             <X size={24} className="text-gray-400" />
                                         </button>
-                                    </motion.div>
+                                    </div>
 
-                                    {/* Form */}
-                                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: 0.15 }}
-                                        >
-                                            <Input label="Item Name" placeholder="e.g. Organic Milk" required />
-                                        </motion.div>
+                                    <form className="space-y-6" onSubmit={handleAddItem}>
+                                        <Input
+                                            label="Item Name"
+                                            placeholder="e.g. Organic Milk"
+                                            required
+                                            value={newItem.name}
+                                            onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                                        />
 
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: 0.2 }}
-                                            className="grid grid-cols-2 gap-6"
-                                        >
-                                            <Input label="Quantity" placeholder="e.g. 1" type="number" required />
-                                            <Input label="Unit" placeholder="e.g. L, kg, pcs" required />
-                                        </motion.div>
-
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: 0.25 }}
-                                        >
-                                            <Select
-                                                label="Category"
-                                                value={newItemCategory}
-                                                onChange={setNewItemCategory}
-                                                options={[
-                                                    { value: "dairy", label: "Dairy" },
-                                                    { value: "vegetables", label: "Vegetables" },
-                                                    { value: "fruits", label: "Fruits" },
-                                                    { value: "meat", label: "Meat" },
-                                                    { value: "bakery", label: "Bakery" },
-                                                    { value: "pantry", label: "Pantry" },
-                                                ]}
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <Input
+                                                label="Quantity"
+                                                placeholder="e.g. 1"
+                                                type="number"
+                                                required
+                                                value={newItem.quantity}
+                                                onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
                                             />
-                                        </motion.div>
+                                            <Input
+                                                label="Unit"
+                                                placeholder="e.g. L, kg, pcs"
+                                                required
+                                                value={newItem.unit}
+                                                onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                                            />
+                                        </div>
 
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: 0.3 }}
-                                            className="grid grid-cols-2 gap-6"
-                                        >
+                                        <Select
+                                            label="Category"
+                                            value={newItem.category}
+                                            onChange={(val) => setNewItem({ ...newItem, category: val })}
+                                            options={categories.filter(c => c !== "All").map(c => ({ value: c, label: c }))}
+                                        />
+
+                                        <div className="grid grid-cols-2 gap-6">
                                             <Input
                                                 type="date"
                                                 label="Purchase Date"
-                                                onClick={(e) => e.currentTarget.showPicker()}
+                                                value={newItem.purchaseDate}
+                                                onChange={(e) => setNewItem({ ...newItem, purchaseDate: e.target.value })}
                                             />
                                             <Input
                                                 type="date"
                                                 label="Expiry Date"
-                                                onClick={(e) => e.currentTarget.showPicker()}
+                                                value={newItem.expiryDate}
+                                                onChange={(e) => setNewItem({ ...newItem, expiryDate: e.target.value })}
                                             />
-                                        </motion.div>
+                                        </div>
 
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: 0.35 }}
-                                        >
-                                            <Input label="Cost per Unit (Optional)" placeholder="0.00" type="number" step="0.01" />
-                                        </motion.div>
+                                        <Input
+                                            label="Cost per Unit (Optional)"
+                                            placeholder="0.00"
+                                            type="number"
+                                            step="0.01"
+                                            value={newItem.costPerUnit}
+                                            onChange={(e) => setNewItem({ ...newItem, costPerUnit: e.target.value })}
+                                        />
 
-                                        {/* Optional: Upload image */}
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.4 }}
-                                            className="pt-4 border-t border-gray-200"
-                                        >
-                                            <label className="flex items-center gap-3 cursor-pointer group">
-                                                <input
-                                                    type="checkbox"
-                                                    className="w-5 h-5 rounded border-gray-300 text-sage-green focus:ring-sage-green/20"
-                                                />
-                                                <div>
-                                                    <span className="text-sm font-medium text-charcoal-blue group-hover:text-sage-green transition-colors">
-                                                        Upload image (Optional)
-                                                    </span>
-                                                    <p className="text-xs text-gray-500">
-                                                        Add a photo of the item or receipt
-                                                    </p>
-                                                </div>
-                                            </label>
-                                        </motion.div>
-
-                                        {/* Actions */}
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.45 }}
-                                            className="flex gap-3 pt-4"
-                                        >
+                                        <div className="flex gap-3 pt-4">
                                             <Button
                                                 type="button"
                                                 onClick={() => setShowAddModal(false)}
                                                 className="flex-1 bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                disabled={submitting}
                                             >
                                                 Cancel
                                             </Button>
-                                            <Button type="submit" className="flex-1">
-                                                <Plus size={20} /> Add to Inventory
+                                            <Button type="submit" className="flex-1" disabled={submitting}>
+                                                {submitting ? <Loader2 className="animate-spin" /> : <><Plus size={20} /> Add to Inventory</>}
                                             </Button>
-                                        </motion.div>
+                                        </div>
                                     </form>
                                 </div>
                             </Card>
