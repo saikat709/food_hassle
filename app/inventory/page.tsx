@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import toast from "react-hot-toast"
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Search, Filter, Trash2, Check, Plus, X, AlertCircle, Loader2 } from "lucide-react";
 import { InventoryItemWithStatus, InventoryStats } from "@/types/inventory";
 import { getCategoryEmoji } from "@/lib/inventory";
-import { sampleInventoryItems, sampleInventoryStats } from "@/lib/inventory-data";
+
 
 const categories = ["All", "Dairy", "Vegetables", "Fruits", "Meat", "Bakery", "Pantry", "Beverages", "Snacks"];
 
@@ -43,26 +44,36 @@ export default function InventoryPage() {
     const fetchInventory = useCallback(async () => {
         try {
             setLoading(true);
-            console.log('[Inventory] Using sample data...');
-            
-            let filteredItems = sampleInventoryItems;
 
+            // Build query params
+            const params = new URLSearchParams();
             if (activeCategory !== "All") {
-                filteredItems = filteredItems.filter(item => item.category === activeCategory);
+                params.append('category', activeCategory);
             }
-
             if (searchQuery) {
-                filteredItems = filteredItems.filter(item => 
-                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                );
+                params.append('search', searchQuery);
             }
 
-            setItems(filteredItems);
-            setStats(sampleInventoryStats);
+            const response = await fetch(`/api/inventory?${params.toString()}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch inventory');
+            }
+
+            const data = await response.json();
+            setItems(data);
+
+            // Fetch stats
+            const statsResponse = await fetch('/api/inventory/stats');
+            if (statsResponse.ok) {
+                const statsData = await statsResponse.json();
+                setStats(statsData);
+            }
+
             setError(null);
         } catch (err: any) {
-            console.error('[Inventory] Error with sample data:', err);
-            setError(`Failed to load inventory from sample data.`);
+            console.error('[Inventory] Error fetching data:', err);
+            setError(`Failed to load inventory: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -83,19 +94,29 @@ export default function InventoryPage() {
         if (!confirm("Are you sure you want to delete this item?")) return;
 
         try {
-            console.log('[Inventory] Deleting item (mock):', id);
-            
+            console.log('[Inventory] Deleting item:', id);
+
+            const response = await fetch(`/api/inventory/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete item');
+            }
+
             // Optimistic update
             setItems(prev => prev.filter(item => item.id !== id));
-            
-            // Refresh stats (mock)
-            // In a real app, you'd refetch or recalculate stats.
-            // For simplicity, we'll just refetch all sample data.
-            fetchInventory(); 
+
+            toast.success('Item deleted successfully');
+
+            // Refresh stats
+            fetchInventory();
 
         } catch (err: any) {
-            console.error('[Inventory] Error deleting item (mock):', err);
-            alert(`Failed to delete item.`);
+            console.error('[Inventory] Error deleting item:', err);
+            toast.error('Failed to delete item');
+            // Revert optimistic update on error
+            fetchInventory();
         }
     };
 
@@ -103,6 +124,61 @@ export default function InventoryPage() {
         // For now, consuming just deletes the item
         // In future, this could move it to a consumption log
         await handleDelete(id);
+    };
+
+    const handleAddItem = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            setSubmitting(true);
+
+            const response = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: newItem.name,
+                    quantity: parseFloat(newItem.quantity),
+                    unit: newItem.unit,
+                    category: newItem.category,
+                    purchaseDate: newItem.purchaseDate || null,
+                    expiryDate: newItem.expiryDate || null,
+                    costPerUnit: newItem.costPerUnit ? parseFloat(newItem.costPerUnit) : null,
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to add item');
+            }
+
+            // Show success toast
+            toast.success(`${newItem.name} added to inventory!`);
+
+            // Reset form
+            setNewItem({
+                name: "",
+                quantity: "",
+                unit: "pcs",
+                category: "Dairy",
+                purchaseDate: new Date().toISOString().split('T')[0],
+                expiryDate: "",
+                costPerUnit: "",
+            });
+
+            // Close modal
+            setShowAddModal(false);
+
+            // Refresh inventory
+            fetchInventory();
+
+        } catch (err: any) {
+            console.error('[Inventory] Error adding item:', err);
+            toast.error(err.message || 'Failed to add item');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -206,8 +282,8 @@ export default function InventoryPage() {
                                                 {getCategoryEmoji(item.category)}
                                             </div>
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${item.status === "expired" ? "bg-terracotta/10 text-terracotta" :
-                                                    item.status === "warning" ? "bg-spiced-ochre/10 text-spiced-ochre" :
-                                                        "bg-sage-green/10 text-sage-green"
+                                                item.status === "warning" ? "bg-spiced-ochre/10 text-spiced-ochre" :
+                                                    "bg-sage-green/10 text-sage-green"
                                                 }`}>
                                                 {item.expiryLabel}
                                             </span>
@@ -289,7 +365,7 @@ export default function InventoryPage() {
                                         </button>
                                     </div>
 
-                                    <form className="space-y-6" onSubmit={() => console.log("comming soon")}>
+                                    <form className="space-y-6" onSubmit={handleAddItem}>
                                         <Input
                                             label="Item Name"
                                             placeholder="e.g. Organic Milk"

@@ -3,3 +3,21 @@
 ### Test
 GET {{baseUrl}}/test
 
+### Log Consumption - Test POST
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Apple",
+  "quantity": 2,
+  "unit": "pcs",
+  "category": "Fruits",
+  "consumptionDate": "2024-01-20",
+  "consumptionTime": "10:30",
+  "notes": "Fresh red apples",
+  "removedFromInventory": true
+}
+
+### Get Consumption History - Test GET
+GET {{baseUrl}}/log-consumption
+
