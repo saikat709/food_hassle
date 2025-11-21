@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -81,7 +82,7 @@ export default function LogFoodPage() {
                     setShowPreviewModal(true);
                 } catch (error) {
                     console.error('OCR failed:', error);
-                    alert('Failed to extract text from image. Please try again with a clearer image.');
+                    toast.error('Failed to extract text from image. Please try again with a clearer image.');
                 } finally {
                     setIsProcessing(false);
                     setOcrProgress(0);
@@ -111,6 +112,64 @@ export default function LogFoodPage() {
         setShowPreviewModal(false);
     };
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Validate required fields
+        if (!formData.itemName || !formData.quantity || !formData.unit || !formData.date) {
+            toast.error('Please fill in all required fields: Item Name, Quantity, Unit, and Date');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/log-consumption', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    itemName: formData.itemName,
+                    quantity: parseFloat(formData.quantity),
+                    unit: formData.unit,
+                    category: category || undefined,
+                    consumptionDate: formData.date,
+                    consumptionTime: formData.time || undefined,
+                    notes: formData.notes || undefined,
+                    removedFromInventory: formData.removeFromInventory,
+                }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                toast.success('Consumption logged successfully!');
+
+                // Reset form
+                setFormData({
+                    itemName: "",
+                    quantity: "",
+                    unit: "",
+                    date: new Date().toISOString().split('T')[0],
+                    time: "",
+                    notes: "",
+                    removeFromInventory: false,
+                });
+                setCategory("");
+
+                // Clear image if uploaded
+                setImage(null);
+                setExtractedData(null);
+                setEditableData(null);
+                setShowPreviewModal(false);
+            } else {
+                const error = await response.json();
+                toast.error(`Failed to log consumption: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Error logging consumption:', error);
+            toast.error('An error occurred while logging consumption. Please try again.');
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto space-y-8">
             <motion.div
@@ -130,8 +189,8 @@ export default function LogFoodPage() {
                         <button
                             onClick={() => setActiveTab("quick")}
                             className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "quick"
-                                    ? "bg-white text-sage-green shadow-md"
-                                    : "text-gray-400 hover:text-charcoal-blue"
+                                ? "bg-white text-sage-green shadow-md"
+                                : "text-gray-400 hover:text-charcoal-blue"
                                 }`}
                         >
                             Quick Log
@@ -139,8 +198,8 @@ export default function LogFoodPage() {
                         <button
                             onClick={() => setActiveTab("detailed")}
                             className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "detailed"
-                                    ? "bg-white text-sage-green shadow-md"
-                                    : "text-gray-400 hover:text-charcoal-blue"
+                                ? "bg-white text-sage-green shadow-md"
+                                : "text-gray-400 hover:text-charcoal-blue"
                                 }`}
                         >
                             Detailed Log
@@ -210,7 +269,7 @@ export default function LogFoodPage() {
 
                     {/* Main Form */}
                     <Card className="p-6 md:p-8">
-                        <form className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Basic Fields - Always Visible */}
                             <Input
                                 label="Item Name"
@@ -306,7 +365,7 @@ export default function LogFoodPage() {
                                 </label>
                             </div>
 
-                            <Button className="w-full py-4 text-lg shadow-xl shadow-sage-green/20" size="lg">
+                            <Button type="submit" className="w-full py-4 text-lg shadow-xl shadow-sage-green/20" size="lg">
                                 <Plus className="w-6 h-6" /> Log Consumption
                             </Button>
                         </form>

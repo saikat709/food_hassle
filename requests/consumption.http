@@ -1,0 +1,190 @@
+@baseUrl = http://localhost:3000/api
+
+### Register Test User (if not already registered)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "fullName": "Test User",
+    "email": "testuser6@example.com",
+    "password": "Password123!",
+    "confirmPassword": "Password123!",
+    "householdSize": 2,
+    "dietaryPreferences": ["Vegetarian", "Gluten-Free"],
+    "budgetRange": "Medium",
+    "location": "San Francisco, CA"
+}
+
+### Add Test Consumption Data - Apples
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Apples",
+  "quantity": 2,
+  "unit": "pcs",
+  "category": "Fruits",
+  "consumptionDate": "2024-01-20",
+  "consumptionTime": "10:30",
+  "notes": "Fresh red apples from the market",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Milk
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Milk",
+  "quantity": 250,
+  "unit": "ml",
+  "category": "Dairy",
+  "consumptionDate": "2024-01-20",
+  "consumptionTime": "08:15",
+  "notes": "Drank with breakfast cereal",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Bread
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Bread",
+  "quantity": 2,
+  "unit": "slices",
+  "category": "Bakery",
+  "consumptionDate": "2024-01-19",
+  "consumptionTime": "19:45",
+  "notes": "Whole grain bread for sandwiches",
+  "removedFromInventory": false
+}
+
+### Add Test Consumption Data - Chicken Breast
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Chicken Breast",
+  "quantity": 200,
+  "unit": "g",
+  "category": "Meat",
+  "consumptionDate": "2024-01-19",
+  "consumptionTime": "18:30",
+  "notes": "Grilled chicken for dinner",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Spinach
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Spinach",
+  "quantity": 100,
+  "unit": "g",
+  "category": "Vegetables",
+  "consumptionDate": "2024-01-19",
+  "consumptionTime": "12:00",
+  "notes": "Added to salad for lunch",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Greek Yogurt
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Greek Yogurt",
+  "quantity": 150,
+  "unit": "g",
+  "category": "Dairy",
+  "consumptionDate": "2024-01-18",
+  "consumptionTime": "09:00",
+  "notes": "Breakfast yogurt with honey",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Bananas
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Bananas",
+  "quantity": 3,
+  "unit": "pcs",
+  "category": "Fruits",
+  "consumptionDate": "2024-01-18",
+  "consumptionTime": "14:30",
+  "notes": "Snack during afternoon break",
+  "removedFromInventory": false
+}
+
+### Add Test Consumption Data - Rice
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Rice",
+  "quantity": 1,
+  "unit": "cup",
+  "category": "Pantry",
+  "consumptionDate": "2024-01-17",
+  "consumptionTime": "19:00",
+  "notes": "Cooked rice as side dish",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Eggs
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Eggs",
+  "quantity": 2,
+  "unit": "pcs",
+  "category": "Dairy",
+  "consumptionDate": "2024-01-17",
+  "consumptionTime": "08:00",
+  "notes": "Boiled eggs for breakfast",
+  "removedFromInventory": true
+}
+
+### Add Test Consumption Data - Tomatoes
+POST {{baseUrl}}/log-consumption
+Content-Type: application/json
+
+{
+  "itemName": "Tomatoes",
+  "quantity": 3,
+  "unit": "pcs",
+  "category": "Vegetables",
+  "consumptionDate": "2024-01-16",
+  "consumptionTime": "18:45",
+  "notes": "Used in pasta sauce",
+  "removedFromInventory": true
+}
+
+### Get All Consumption History
+GET {{baseUrl}}/log-consumption
+
+### Get Consumption History - Filtered by Date
+GET {{baseUrl}}/log-consumption?startDate=2024-01-19&endDate=2024-01-21
+
+### Get Consumption History - Filtered by Category
+GET {{baseUrl}}/log-consumption?category=Fruits
+
+### Get Consumption History - Filtered by Item
+GET {{baseUrl}}/log-consumption?itemName=Apple
+
+### Update Consumption (replace [id] with actual consumption ID)
+PUT {{baseUrl}}/log-consumption/[id]
+Content-Type: application/json
+
+{
+  "quantity": 5,
+  "notes": "Updated quantity"
+}
+
+### Delete Consumption (replace [id] with actual consumption ID)
+DELETE {{baseUrl}}/log-consumption/[id]
