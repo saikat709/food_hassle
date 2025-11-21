@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Search, Filter, Trash2, Check, Plus, X, AlertCircle, Loader2 } from "lucide-react";
 import { InventoryItemWithStatus, InventoryStats } from "@/types/inventory";
 import { getCategoryEmoji } from "@/lib/inventory";
+import { sampleInventoryItems, sampleInventoryStats } from "@/lib/inventory-data";
 
 const categories = ["All", "Dairy", "Vegetables", "Fruits", "Meat", "Bakery", "Pantry", "Beverages", "Snacks"];
 
@@ -31,7 +32,7 @@ export default function InventoryPage() {
     const [newItem, setNewItem] = useState({
         name: "",
         quantity: "",
-        unit: "",
+        unit: "pcs",
         category: "Dairy",
         purchaseDate: new Date().toISOString().split('T')[0],
         expiryDate: "",
@@ -42,27 +43,26 @@ export default function InventoryPage() {
     const fetchInventory = useCallback(async () => {
         try {
             setLoading(true);
-            // Build query string
-            const params = new URLSearchParams();
-            if (activeCategory !== "All") params.append("category", activeCategory);
-            if (searchQuery) params.append("search", searchQuery);
+            console.log('[Inventory] Using sample data...');
+            
+            let filteredItems = sampleInventoryItems;
 
-            const [itemsRes, statsRes] = await Promise.all([
-                fetch(`/api/inventory?${params.toString()}`),
-                fetch('/api/inventory/stats')
-            ]);
+            if (activeCategory !== "All") {
+                filteredItems = filteredItems.filter(item => item.category === activeCategory);
+            }
 
-            if (!itemsRes.ok || !statsRes.ok) throw new Error("Failed to fetch data");
+            if (searchQuery) {
+                filteredItems = filteredItems.filter(item => 
+                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
 
-            const itemsData = await itemsRes.json();
-            const statsData = await statsRes.json();
-
-            setItems(itemsData);
-            setStats(statsData);
+            setItems(filteredItems);
+            setStats(sampleInventoryStats);
             setError(null);
-        } catch (err) {
-            console.error(err);
-            setError("Failed to load inventory. Please try again.");
+        } catch (err: any) {
+            console.error('[Inventory] Error with sample data:', err);
+            setError(`Failed to load inventory from sample data.`);
         } finally {
             setLoading(false);
         }
@@ -77,57 +77,25 @@ export default function InventoryPage() {
         return () => clearTimeout(timer);
     }, [fetchInventory]);
 
-    // Handlers
-    const handleAddItem = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
-        try {
-            const res = await fetch('/api/inventory', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newItem),
-            });
 
-            if (!res.ok) throw new Error("Failed to add item");
-
-            await fetchInventory();
-            setShowAddModal(false);
-            // Reset form
-            setNewItem({
-                name: "",
-                quantity: "",
-                unit: "",
-                category: "Dairy",
-                purchaseDate: new Date().toISOString().split('T')[0],
-                expiryDate: "",
-                costPerUnit: "",
-            });
-        } catch (err) {
-            console.error(err);
-            alert("Failed to add item. Please try again.");
-        } finally {
-            setSubmitting(false);
-        }
-    };
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this item?")) return;
 
         try {
-            const res = await fetch(`/api/inventory/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (!res.ok) throw new Error("Failed to delete item");
-
+            console.log('[Inventory] Deleting item (mock):', id);
+            
             // Optimistic update
             setItems(prev => prev.filter(item => item.id !== id));
-            // Refresh stats in background
-            const statsRes = await fetch('/api/inventory/stats');
-            if (statsRes.ok) setStats(await statsRes.json());
-        } catch (err) {
-            console.error(err);
-            alert("Failed to delete item.");
+            
+            // Refresh stats (mock)
+            // In a real app, you'd refetch or recalculate stats.
+            // For simplicity, we'll just refetch all sample data.
+            fetchInventory(); 
+
+        } catch (err: any) {
+            console.error('[Inventory] Error deleting item (mock):', err);
+            alert(`Failed to delete item.`);
         }
     };
 
@@ -321,7 +289,7 @@ export default function InventoryPage() {
                                         </button>
                                     </div>
 
-                                    <form className="space-y-6" onSubmit={handleAddItem}>
+                                    <form className="space-y-6" onSubmit={() => console.log("comming soon")}>
                                         <Input
                                             label="Item Name"
                                             placeholder="e.g. Organic Milk"
@@ -335,16 +303,27 @@ export default function InventoryPage() {
                                                 label="Quantity"
                                                 placeholder="e.g. 1"
                                                 type="number"
+                                                step="0.01"
                                                 required
                                                 value={newItem.quantity}
                                                 onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
                                             />
-                                            <Input
+                                            <Select
                                                 label="Unit"
-                                                placeholder="e.g. L, kg, pcs"
-                                                required
                                                 value={newItem.unit}
-                                                onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                                                onChange={(val) => setNewItem({ ...newItem, unit: val })}
+                                                options={[
+                                                    { value: "pcs", label: "Pieces" },
+                                                    { value: "kg", label: "Kilograms" },
+                                                    { value: "g", label: "Grams" },
+                                                    { value: "L", label: "Liters" },
+                                                    { value: "mL", label: "Milliliters" },
+                                                    { value: "lb", label: "Pounds" },
+                                                    { value: "oz", label: "Ounces" },
+                                                    { value: "cups", label: "Cups" },
+                                                    { value: "tbsp", label: "Tablespoons" },
+                                                    { value: "tsp", label: "Teaspoons" },
+                                                ]}
                                             />
                                         </div>
 

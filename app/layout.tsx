@@ -1,12 +1,15 @@
-'use client'
-
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { AOSInit } from "@/components/AOSInit";
-import ChatbotWrapper from "@/components/ChatbotWrapper";
+import { Providers } from "@/components/Providers";
+
 import { BackgroundBlobs } from "@/components/ui/BackgroundBlobs";
-import { SessionProvider } from "next-auth/react";
+
+export const metadata: Metadata = {
+  title: "Food Hassle - Reduce Food Waste, Embrace Sustainability",
+  description: "Sustainable Food Management Platform",
+};
 
 export default function RootLayout({
   children,
@@ -14,18 +17,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SessionProvider>
-      <html lang="en">
-        <body className="bg-off-white text-charcoal-blue antialiased min-h-screen overflow-x-hidden relative">
+    <html lang="en">
+      <body className="bg-off-white text-charcoal-blue antialiased min-h-screen overflow-x-hidden relative">
+        <Providers>
           <AOSInit />
           <BackgroundBlobs />
           <Navbar />
           <main className="pt-24 px-4 pb-20 max-w-7xl mx-auto">
             {children}
           </main>
-          <ChatbotWrapper />
-        </body>
-      </html>
-    </SessionProvider>
+        </Providers>
+      </body>
+    </html>
   );
 }
