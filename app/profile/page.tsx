@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Settings, LogOut, Calendar } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ const data = [
 ];
 
 export default function ProfilePage() {
+    const router = useRouter();
     const [budget, setBudget] = useState(300);
     const { data: session, status } = useSession();
 
@@ -143,6 +144,22 @@ export default function ProfilePage() {
                             <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <div className="w-3 h-3 rounded-full bg-terracotta" /> Wasted
                             </div>
+                        </div>
+
+                        {/* View Consumption History Button */}
+                        <div className="mt-6">
+                            <button
+                                onClick={() => router.push('/history')}
+                                className="w-full glass-panel rounded-2xl p-6 flex items-center gap-4 hover:bg-sage-green/5 transition-all duration-300 cursor-pointer border border-transparent hover:border-sage-green/20"
+                            >
+                                <div className="w-14 h-14 rounded-2xl bg-sage-green/10 flex items-center justify-center flex-shrink-0">
+                                    <Calendar className="text-sage-green" size={28} />
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className="font-bold font-clash text-lg text-charcoal-blue">View Consumption History</p>
+                                    <p className="text-sm text-gray-500 mt-1">See all your logged consumption</p>
+                                </div>
+                            </button>
                         </div>
                     </Card>
 

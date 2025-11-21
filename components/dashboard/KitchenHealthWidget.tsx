@@ -3,12 +3,18 @@
 import { Card } from "@/components/ui/Card";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-const data = [
-    { name: "Consumed", value: 75, color: "#8A9A5B" },
-    { name: "Wasted", value: 25, color: "#E2725B" },
-];
+export function KitchenHealthWidget({ consumedCount = 0, wastedCount = 0 }: { consumedCount?: number; wastedCount?: number }) {
+    const total = consumedCount + wastedCount;
+    const efficiency = total > 0 ? Math.round((consumedCount / total) * 100) : 100;
 
-export function KitchenHealthWidget() {
+    const data = [
+        { name: "Consumed", value: consumedCount, color: "#8A9A5B" },
+        { name: "Wasted", value: wastedCount, color: "#E2725B" },
+    ];
+
+    // If no data, show placeholder
+    const chartData = total > 0 ? data : [{ name: "No Data", value: 1, color: "#E5E7EB" }];
+
     return (
         <Card className="h-full flex flex-col justify-between relative overflow-hidden">
             <div>
@@ -20,23 +26,23 @@ export function KitchenHealthWidget() {
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
-                            data={data}
+                            data={chartData}
                             cx="50%"
                             cy="50%"
                             innerRadius={50}
                             outerRadius={70}
-                            paddingAngle={5}
+                            paddingAngle={total > 0 ? 5 : 0}
                             dataKey="value"
                             stroke="none"
                         >
-                            {data.map((entry, index) => (
+                            {chartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                         </Pie>
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                    <span className="text-2xl font-bold text-charcoal-blue">75%</span>
+                    <span className="text-2xl font-bold text-charcoal-blue">{efficiency}%</span>
                     <span className="text-xs text-gray-400">Efficient</span>
                 </div>
             </div>
@@ -44,11 +50,11 @@ export function KitchenHealthWidget() {
             <div className="flex justify-between text-sm">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-sage-green" />
-                    <span>Consumed</span>
+                    <span>Consumed ({consumedCount})</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-terracotta" />
-                    <span>Wasted</span>
+                    <span>Wasted ({wastedCount})</span>
                 </div>
             </div>
         </Card>

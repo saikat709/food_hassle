@@ -25,6 +25,7 @@ model User {
   chatSessions        ChatSession[]
   mealPlans           MealPlan[]
   inventoryItems      InventoryItem[]
+  consumptions        Consumption[]
 
   @@map("users")
 }
@@ -44,6 +45,25 @@ model InventoryItem {
 
   @@map("inventory_items")
   @@index([userId])
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name          String
+  quantity      Float
+  unit          String
+  category      String
+  purchaseDate  DateTime?
+  expiryDate    DateTime?
+  costPerUnit   Float?
+  imageUrl      String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("inventory_items")
+  @@index([userId])
+  @@index([expiryDate])
 }
 
 model ChatSession {
@@ -106,4 +126,26 @@ model MealPlanItem {
 
   @@map("meal_plan_items")
   @@index([mealPlanId])
+}
+
+model Consumption {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  itemName            String
+  quantity            Float
+  unit                String
+  category            String?
+  consumptionDate     DateTime
+  consumptionTime     String?   // HH:MM format
+  notes               String?   @db.Text
+  removedFromInventory Boolean  @default(false)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  @@map("consumptions")
+  @@index([userId])
+  @@index([consumptionDate])
 }
