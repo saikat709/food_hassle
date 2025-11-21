@@ -133,7 +133,10 @@ export async function chat(
             throw new Error('User not found');
         }
 
-        context.userProfile = user;
+        context.userProfile = {
+            ...user,
+            location: user.location ?? undefined,
+        };
 
         // Get or create session
         // @ts-ignore - Runtime check for model existence
