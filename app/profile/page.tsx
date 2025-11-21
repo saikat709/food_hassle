@@ -6,7 +6,9 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { User, Settings, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useRouter } from "next/navigation";
 
 const data = [
     { name: "Week 1", consumed: 40, wasted: 24 },
@@ -82,7 +84,12 @@ export default function ProfilePage() {
                         </div>
                     </Card>
 
-                    <Button variant="ghost" className="w-full text-terracotta hover:bg-terracotta/10">
+                    <Button
+                        onClick={() => {
+                            console.log('Signing out...');
+                            signOut({ callbackUrl: "/auth" });
+                        }}
+                        variant="ghost" className="w-full text-terracotta hover:bg-terracotta/10">
                         <LogOut size={18} /> Sign Out
                     </Button>
                 </div>
