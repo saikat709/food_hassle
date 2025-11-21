@@ -19,7 +19,7 @@ model User {
   budgetRange         String   @default("Medium")
   location            String?
   createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  updatedAt           DateTime @updatedAt 
 
   @@map("users")
 }

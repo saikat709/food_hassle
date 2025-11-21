@@ -219,7 +219,7 @@ export default function AuthPage() {
                             Live Better.
                         </h2>
                         <p className="text-xl text-gray-200 font-dm-sans leading-relaxed">
-                            Join the community of urban harvesters making a difference one meal at a time.
+                            Join the community of food-conscious individuals making a difference one meal at a time.
                         </p>
 
                         <div className="mt-8 space-y-4">
