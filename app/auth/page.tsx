@@ -87,6 +87,7 @@ export default function AuthPage() {
     };
 
     const handleRegister = async (e: React.FormEvent) => {
+        console.log("Register button clicked");
         e.preventDefault();
         setIsLoading(true);
         setError("");
@@ -105,6 +106,7 @@ export default function AuthPage() {
         }
 
         try {
+            console.log("Registering user...");
             const response = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -132,8 +134,10 @@ export default function AuthPage() {
                 }
             }, 1000);
         } catch (err: any) {
+            console.error("Registration failed:", err);
             setError(err.message || "An error occurred during registration");
         } finally {
+            console.log("Registration complete");
             setIsLoading(false);
         }
     };
@@ -446,7 +450,7 @@ export default function AuthPage() {
                                                 value={registerData.email}
                                                 onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                                                 className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-sage-green focus:ring-4 focus:ring-sage-green/10 transition-all outline-none"
-                                                placeholder="you@example.com"
+                                                placeholder="testuser2@example.com"
                                             />
                                         </div>
                                     </motion.div>
