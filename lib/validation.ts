@@ -3,7 +3,7 @@ import { z } from 'zod';
 // Validation schemas
 export const registerSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-    email: z.string().email('Invalid email format'),
+    email: z.string().trim().pipe(z.email().toLowerCase()),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
     householdSize: z.number().min(1).max(20),
@@ -16,7 +16,7 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-    email: z.string().email('Invalid email format'),
+    email: z.string().trim().pipe(z.email().toLowerCase()),
     password: z.string().min(1, 'Password is required'),
 });
 
