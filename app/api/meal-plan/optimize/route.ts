@@ -38,19 +38,19 @@ const getMealPlanSchema = z.object({
 
 // POST - Generate new meal plan
 export async function POST(request: NextRequest) {
+
+    console.log(request.body);
+
     try {
         const body = await request.json();
 
-        // Validate request
         const validatedData = mealPlanRequestSchema.parse(body);
 
-        // Convert inventory items with date strings to Date objects
         const inventoryItems = validatedData.inventoryItems?.map(item => ({
             ...item,
             expiryDate: item.expiryDate ? new Date(item.expiryDate) : undefined,
         }));
 
-        // Generate meal plan
         const mealPlan = await generateMealPlan({
             userId: validatedData.userId,
             weekStartDate: new Date(validatedData.weekStartDate),

@@ -1,13 +1,14 @@
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import { Scan, Plus, BookOpen } from "lucide-react";
+import { Scan, Plus, BookOpen, Calendar } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
 const actions = [
     { name: "Scan Receipt", icon: Scan, color: "bg-sage-green", href: "/log" },
     { name: "Log Food", icon: Plus, color: "bg-deep-emerald", href: "/log" },
+    { name: "Meal Plan", icon: Calendar, color: "bg-blue-500", href: "/meal-plan" },
     { name: "Tips", icon: BookOpen, color: "bg-spiced-ochre", href: "/resources" },
 ];
 

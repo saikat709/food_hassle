@@ -135,7 +135,7 @@ export async function chat(
 
         context.userProfile = {
             ...user,
-            location: user.location ?? undefined,
+            location: user.location || undefined
         };
 
         // Get or create session
