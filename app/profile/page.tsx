@@ -1,6 +1,7 @@
 "use client";
-
+export const dynamic = "force-dynamic";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +20,11 @@ const data = [
 
 export default function ProfilePage() {
     const [budget, setBudget] = useState(300);
+    const { data: session, status } = useSession();
+
+    if (status === "loading") {
+        return <div className="flex items-center justify-center h-screen"><span className="text-gray-500">Loading profile...</span></div>;
+    }
 
     return (
         <div className="space-y-8">
@@ -29,12 +35,10 @@ export default function ProfilePage() {
                 className="flex items-center justify-between"
             >
                 <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-sage-green flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-                        A
-                    </div>
+                    <div className="w-20 h-20 rounded-full bg-sage-green flex items-center justify-center text-white text-3xl font-bold shadow-lg">{session?.user?.name ? session.user.name.charAt(0) : "U"}</div>
                     <div>
-                        <h1 className="text-3xl font-bold font-clash text-charcoal-blue">Alex Doe</h1>
-                        <p className="text-gray-500">Eco-Warrior • Member since 2024</p>
+                        <h1 className="text-3xl font-bold font-clash text-charcoal-blue">{session?.user?.name ?? "User"}</h1>
+                        <p className="text-gray-500">{session?.user?.email ? `Logged in as ${session.user.email}` : "Not logged in"}</p>
                     </div>
                 </div>
                 <Button variant="outline" size="sm">
